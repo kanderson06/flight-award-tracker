@@ -160,11 +160,15 @@ def main():
                 })
         new_state[k] = cur
 
-    # records that vanished from the feed entirely (date fell out of window
-    # or seats.aero dropped the record) -> mark as gone once
+    # records that vanished from the feed entirely -> mark as gone once.
+    # Dates that merely rolled out of the watch window are dropped silently;
+    # "gone" must only ever mean a genuine disappearance.
     for k in list(new_state.keys()):
         if k not in seen_keys and state.get(k) is not None:
             route, date, source = k.split("|")
+            if not (start_date <= date <= end_date):
+                del new_state[k]
+                continue
             for c in CABINS:
                 old = state[k].get(c, 0)
                 if old not in (0, "none"):
